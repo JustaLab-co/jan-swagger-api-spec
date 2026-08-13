@@ -4,7 +4,8 @@
     "title": "JustaName API Reference",
     "description": "Welcome to the JustaName API Reference, our centralized location for all things JustaName. Here you can find all the APIs needed to integrate with our services.",
     "version": "1.0",
-    "contact": {}
+    "contact": {},
+    "x-guidance": "JustaName ENS resolution: GET /ens/v2/resolve?ens=<name> for forward, GET /ens/v2/reverse?address=<addr> for reverse. Both are pay-per-call (0.001 USDC on Base via x402 v2 or MPP-charge draft-01). Send X-Rpc-Url with your own HTTPS Ethereum RPC URL to skip payment (caller pays upstream RPC compute). Batch up to 50 names/addresses per call by repeating the query parameter."
   },
   "servers": [
     {
@@ -19,6 +20,14 @@
   ],
   "tags": [
     {
+      "name": "Resolution",
+      "description": "Forward and reverse ENS resolution. Free when the caller supplies its own RPC URL (X-Rpc-Url header or rpcUrl query param); otherwise the route answers 402 and accepts per-request payment of 0.001 USDC on Base via x402 v2 or MPP-charge. See the Discovery tag for machine-readable pricing."
+    },
+    {
+      "name": "Discovery",
+      "description": "Free, unauthenticated endpoints that describe the paid routes -- price, asset, CAIP-2 network and recipient -- so agents can read the terms before firing a request that would 402."
+    },
+    {
       "name": "ApiKey",
       "description": ""
     },
@@ -32,6 +41,267 @@
     }
   ],
   "paths": {
+    "/ens/v1/mapp/permission/add": {
+      "post": {
+        "operationId": "MAppWriteController_addPermission",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MAppAddPermissionApiRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "mApp"
+        ],
+        "x-payment-info": {
+          "authMode": "none"
+        }
+      }
+    },
+    "/ens/v1/mapp/field/append": {
+      "post": {
+        "operationId": "MAppWriteController_appendField",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MAppAppendFieldApiRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "mApp"
+        ],
+        "x-payment-info": {
+          "authMode": "none"
+        }
+      }
+    },
+    "/ens/v1/mapp/permission/revoke": {
+      "post": {
+        "operationId": "MAppWriteController_revokePermission",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MAppRevokePermissionApiRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "mApp"
+        ],
+        "x-payment-info": {
+          "authMode": "none"
+        }
+      }
+    },
+    "/ens/v1/siwe/request-challenge": {
+      "post": {
+        "operationId": "SiweChallengeController_requestChallenge",
+        "summary": "Request a challenge",
+        "description": "Request a challenge.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SiweRequestChallengeApiRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The challenge was requested successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiweRequestChallengeApiResponseSuccessSwagger"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Siwe"
+        ],
+        "x-payment-info": {
+          "authMode": "none"
+        }
+      }
+    },
+    "/ens/v1/siwe/mapp/add-permission": {
+      "post": {
+        "operationId": "SiweChallengeController_requestAddMAppChallenge",
+        "summary": "Request a challenge to add mApp permission",
+        "description": "Request a challenge to add mApp permission.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SiweRequestAddMAppPermissionChallengeApiRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The challenge was requested successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiweRequestAddMAppPermissionChallengeApiResponseSuccessSwagger"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Siwe"
+        ],
+        "x-payment-info": {
+          "authMode": "none"
+        }
+      }
+    },
+    "/ens/v1/siwe/mapp/append-field": {
+      "post": {
+        "operationId": "SiweChallengeController_requestAppendMAppFieldChallenge",
+        "summary": "Request a challenge to append mApp field",
+        "description": "Request a challenge to append mApp field.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SiweRequestAppendMAppFieldChallengeApiRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The challenge was requested successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiweRequestAppendMAppFieldChallengeApiResponseSuccessSwagger"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Siwe"
+        ],
+        "x-payment-info": {
+          "authMode": "none"
+        }
+      }
+    },
+    "/ens/v1/siwe/mapp/revoke-permission": {
+      "post": {
+        "operationId": "SiweChallengeController_requestRevokeMAppChallenge",
+        "summary": "Request a challenge to revoke mApp permission",
+        "description": "Request a challenge to revoke mApp permission.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SiweRequestRevokeMAppPermissionChallengeApiRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The challenge was requested successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiweRequestRevokeMAppPermissionChallengeApiResponseSuccessSwagger"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Siwe"
+        ],
+        "x-payment-info": {
+          "authMode": "none"
+        }
+      }
+    },
+    "/ens/v1/siwe/verify-message": {
+      "post": {
+        "operationId": "SiweVerifyController_verify",
+        "summary": "Verify a message",
+        "description": "Verify a message.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SiweVerifyMessageApiRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The message was verified successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiweVerifyMessageApiResponseSuccessSwagger"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Siwe"
+        ],
+        "x-payment-info": {
+          "authMode": "none"
+        }
+      }
+    },
     "/ens/v2/siwe/challenges": {
       "post": {
         "operationId": "SiweV2WriteController_challenge",
@@ -63,7 +333,10 @@
         },
         "tags": [
           "Siwe V2"
-        ]
+        ],
+        "x-payment-info": {
+          "authMode": "none"
+        }
       }
     },
     "/ens/v2/siwe/verify": {
@@ -97,7 +370,10 @@
         },
         "tags": [
           "Siwe V2"
-        ]
+        ],
+        "x-payment-info": {
+          "authMode": "none"
+        }
       }
     },
     "/ens/v1/offchain-resolvers": {
@@ -120,7 +396,10 @@
         },
         "tags": [
           "OffchainResolvers"
-        ]
+        ],
+        "x-payment-info": {
+          "authMode": "none"
+        }
       }
     },
     "/ens/v1/offchain-resolvers/{id}": {
@@ -152,7 +431,10 @@
         },
         "tags": [
           "OffchainResolvers"
-        ]
+        ],
+        "x-payment-info": {
+          "authMode": "none"
+        }
       }
     },
     "/ens/v2/offchain-resolvers/criteria": {
@@ -368,7 +650,394 @@
         },
         "tags": [
           "OffchainResolvers"
-        ]
+        ],
+        "x-payment-info": {
+          "authMode": "none"
+        }
+      }
+    },
+    "/ens/v1/subname/accept": {
+      "post": {
+        "operationId": "SubdomainWriteController_accept",
+        "summary": "Accept Subname",
+        "description": "Accept a reserved Subname.",
+        "parameters": [
+          {
+            "name": "x-signature",
+            "in": "header",
+            "description": "The signature.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-message",
+            "in": "header",
+            "description": "The Message.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-address",
+            "in": "header",
+            "description": "The Address.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubnameAcceptApiRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "The Subname was claimed successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubnameAcceptApiResponseSuccessSwagger"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Subname"
+        ],
+        "x-payment-info": {
+          "authMode": "none"
+        }
+      }
+    },
+    "/ens/v1/subname/reserve": {
+      "post": {
+        "operationId": "SubdomainWriteController_apiReserve",
+        "summary": "Reserve Subname",
+        "description": "Reserve Subname to be claimed later.",
+        "parameters": [
+          {
+            "name": "x-api-key",
+            "in": "header",
+            "description": "The Api Key.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubnameReserveApiRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "The Subname was reserved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubnameReserveApiResponseSuccessSwagger"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Subname"
+        ],
+        "x-payment-info": {
+          "authMode": "none"
+        }
+      }
+    },
+    "/ens/v1/subname/add": {
+      "post": {
+        "operationId": "SubdomainWriteController_add",
+        "summary": "Add Subname",
+        "description": "Add a new subname",
+        "parameters": [
+          {
+            "name": "x-api-key",
+            "in": "header",
+            "description": "The Api Key.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-signature",
+            "in": "header",
+            "description": "The signature.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-message",
+            "in": "header",
+            "description": "The Message.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-address",
+            "in": "header",
+            "description": "The Address.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubnameAddApiRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "The Subname was added successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubnameAddApiResponseSuccessSwagger"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Subname"
+        ],
+        "x-payment-info": {
+          "authMode": "none"
+        }
+      }
+    },
+    "/ens/v1/subname/update": {
+      "post": {
+        "operationId": "SubdomainWriteController_update",
+        "summary": "Update Subname",
+        "description": "Update the specified subname's data",
+        "parameters": [
+          {
+            "name": "x-signature",
+            "in": "header",
+            "description": "The signature.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-message",
+            "in": "header",
+            "description": "The Message.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-address",
+            "in": "header",
+            "description": "The Address.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubnameUpdateApiRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "The Subname was updated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubnameUpdateApiResponseSuccessSwagger"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Subname"
+        ],
+        "x-payment-info": {
+          "authMode": "none"
+        }
+      }
+    },
+    "/ens/v1/subname/revoke": {
+      "post": {
+        "operationId": "SubdomainWriteController_revoke",
+        "summary": "Revoke Subname",
+        "description": "Revoke the specified subname",
+        "parameters": [
+          {
+            "name": "x-api-key",
+            "in": "header",
+            "description": "The Api Key.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-signature",
+            "in": "header",
+            "description": "The signature.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-message",
+            "in": "header",
+            "description": "The Message.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-address",
+            "in": "header",
+            "description": "The Address.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubnameRevokeApiRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "The Subname was revoked successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubnameRevokeApiResponseSuccessSwagger"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Subname"
+        ],
+        "x-payment-info": {
+          "authMode": "none"
+        }
+      }
+    },
+    "/ens/v1/subname/reject": {
+      "post": {
+        "operationId": "SubdomainWriteController_revokeInvitation",
+        "summary": "Reject Subname Invitation",
+        "description": "Reject the specified subname invitation",
+        "parameters": [
+          {
+            "name": "x-signature",
+            "in": "header",
+            "description": "The signature.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-message",
+            "in": "header",
+            "description": "The Message.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-address",
+            "in": "header",
+            "description": "The Address.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubnameRevokeApiRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "The Subname invitation was rejected successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubnameRevokeApiResponseSuccessSwagger"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Subname"
+        ],
+        "x-payment-info": {
+          "authMode": "none"
+        }
       }
     },
     "/ens/v2/subname": {
@@ -456,7 +1125,10 @@
         },
         "tags": [
           "Subname"
-        ]
+        ],
+        "x-payment-info": {
+          "authMode": "none"
+        }
       }
     },
     "/ens/v2/subname/all": {
@@ -757,7 +1429,10 @@
         },
         "tags": [
           "Subname"
-        ]
+        ],
+        "x-payment-info": {
+          "authMode": "none"
+        }
       }
     },
     "/ens/v1/subname/subname": {
@@ -843,7 +1518,10 @@
         "tags": [
           "Subname",
           "Subname"
-        ]
+        ],
+        "x-payment-info": {
+          "authMode": "none"
+        }
       }
     },
     "/ens/v1/subname/ens": {
@@ -989,7 +1667,10 @@
         "tags": [
           "Subname",
           "Subname"
-        ]
+        ],
+        "x-payment-info": {
+          "authMode": "none"
+        }
       }
     },
     "/ens/v1/subname/address": {
@@ -1129,7 +1810,10 @@
         "tags": [
           "Subname",
           "Subname"
-        ]
+        ],
+        "x-payment-info": {
+          "authMode": "none"
+        }
       }
     },
     "/ens/v1/subname/records": {
@@ -1215,7 +1899,10 @@
         "tags": [
           "Subname",
           "Subname"
-        ]
+        ],
+        "x-payment-info": {
+          "authMode": "none"
+        }
       }
     },
     "/ens/v1/subname/available": {
@@ -1301,7 +1988,10 @@
         "tags": [
           "Subname",
           "Subname"
-        ]
+        ],
+        "x-payment-info": {
+          "authMode": "none"
+        }
       }
     },
     "/ens/v1/subname/search": {
@@ -1419,7 +2109,10 @@
         "tags": [
           "Subname",
           "Subname"
-        ]
+        ],
+        "x-payment-info": {
+          "authMode": "none"
+        }
       }
     },
     "/ens/v1/subname/ens-list": {
@@ -1565,7 +2258,10 @@
         "tags": [
           "Subname",
           "Subname"
-        ]
+        ],
+        "x-payment-info": {
+          "authMode": "none"
+        }
       }
     },
     "/ens/v2/subnames": {
@@ -1632,7 +2328,10 @@
         },
         "tags": [
           "Subname V2"
-        ]
+        ],
+        "x-payment-info": {
+          "authMode": "none"
+        }
       },
       "post": {
         "operationId": "SubnameV2WriteController_add",
@@ -1701,7 +2400,10 @@
         },
         "tags": [
           "Subname V2"
-        ]
+        ],
+        "x-payment-info": {
+          "authMode": "none"
+        }
       }
     },
     "/ens/v2/subnames/all": {
@@ -1975,7 +2677,10 @@
         },
         "tags": [
           "Subname V2"
-        ]
+        ],
+        "x-payment-info": {
+          "authMode": "none"
+        }
       }
     },
     "/ens/v2/subnames/records": {
@@ -2039,7 +2744,10 @@
         },
         "tags": [
           "Subname V2"
-        ]
+        ],
+        "x-payment-info": {
+          "authMode": "none"
+        }
       }
     },
     "/ens/v2/subnames/{subname}": {
@@ -2121,7 +2829,10 @@
         },
         "tags": [
           "Subname V2"
-        ]
+        ],
+        "x-payment-info": {
+          "authMode": "none"
+        }
       }
     },
     "/ens/v2/subnames/invitations": {
@@ -2165,7 +2876,10 @@
         },
         "tags": [
           "Subname V2"
-        ]
+        ],
+        "x-payment-info": {
+          "authMode": "none"
+        }
       }
     },
     "/ens/v2/subnames/invitations/{subname}": {
@@ -2247,7 +2961,10 @@
         },
         "tags": [
           "Subname V2"
-        ]
+        ],
+        "x-payment-info": {
+          "authMode": "none"
+        }
       },
       "delete": {
         "operationId": "SubnameV2WriteController_revoke",
@@ -2336,14 +3053,17 @@
         },
         "tags": [
           "Subname V2"
-        ]
+        ],
+        "x-payment-info": {
+          "authMode": "none"
+        }
       }
     },
     "/ens/v2/resolve": {
       "get": {
         "operationId": "ResolveV2ReadController_resolve",
         "summary": "Resolve ENS records (single or batch)",
-        "description": "Resolves one or more ENS names through the on-chain CCIP-Read flow. Repeat the ens query parameter (?ens=a.eth&ens=b.eth) to batch up to 50 names. The caller must supply an HTTPS rpcUrl, preferably via the X-Rpc-Url header (recommended; keeps the API key out of access logs) or alternatively as a query parameter. Private/loopback/link-local hosts are rejected. Response shape is polymorphic by request cardinality: an object for single-ens requests, an array (in input order, null for failed entries) for batches.",
+        "description": "Resolves one or more ENS names through the on-chain CCIP-Read flow. Repeat the ens query parameter (?ens=a.eth&ens=b.eth) to batch up to 50 names. The caller MAY supply an HTTPS rpcUrl, preferably via the X-Rpc-Url header (recommended; keeps the API key out of access logs) or as a query parameter -- doing so makes the request free (the caller pays the upstream RPC compute). Without an rpcUrl the request is paid (x402 or MPP, see 402 challenge). Private/loopback/link-local hosts are rejected. Response shape is polymorphic by request cardinality: an object for single-ens requests, an array (in input order, null for failed entries) for batches.",
         "parameters": [
           {
             "name": "ens",
@@ -2370,14 +3090,6 @@
             "description": "HTTPS RPC URL used for on-chain reads. Caller-supplied so the cost of the resolution is paid by the caller, not the service. PREFER the X-Rpc-Url request header instead -- query strings end up in access logs and most rpcUrls embed an API key. Must use https. Private/loopback/link-local hosts are rejected.",
             "schema": {
               "example": "https://eth-mainnet.g.alchemy.com/v2/YOUR_KEY",
-              "type": "string"
-            }
-          },
-          {
-            "name": "x-rpc-url",
-            "required": true,
-            "in": "header",
-            "schema": {
               "type": "string"
             }
           },
@@ -2412,7 +3124,7 @@
           {
             "name": "X-Rpc-Url",
             "in": "header",
-            "description": "Preferred location for the caller-supplied rpcUrl. Takes precedence over the rpcUrl query parameter when both are present. Use this in production so the API key does not land in HTTP access logs.",
+            "description": "Optional caller-supplied rpcUrl. Takes precedence over the rpcUrl query parameter when both are present. When supplied, the route is free (BYO compute). When omitted, the route falls back to a server-managed RPC and requires payment.",
             "required": false,
             "schema": {
               "type": "string"
@@ -2420,6 +3132,9 @@
           }
         ],
         "responses": {
+          "402": {
+            "description": "Payment Required. The route accepts x402 v2 and MPP-charge draft-01. See PAYMENT-REQUIRED and WWW-Authenticate headers for the full challenge; pay 0.001 USDC on Base or send X-Rpc-Url to bypass."
+          },
           "default": {
             "description": "Records resolved successfully.",
             "content": {
@@ -2432,15 +3147,55 @@
           }
         },
         "tags": [
-          "Resolve V2"
-        ]
+          "Resolution"
+        ],
+        "x-payment-info": {
+          "authMode": "payment",
+          "offers": [
+            {
+              "amount": "1000",
+              "currency": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "description": "Resolves one or more ENS names through the on-chain CCIP-Read flow. Repeat the ens query parameter (?ens=a.eth&ens=b.eth) to batch up to 50 names. The caller MAY supply an HTTPS rpcUrl, preferably via the X-Rpc-Url header (recommended; keeps the API key out of access logs) or as a query parameter -- doing so makes the request free (the caller pays the upstream RPC compute). Without an rpcUrl the request is paid (x402 or MPP, see 402 challenge). Private/loopback/link-local hosts are rejected. Response shape is polymorphic by request cardinality: an object for single-ens requests, an array (in input order, null for failed entries) for batches.",
+              "intent": "charge",
+              "method": "evm",
+              "expires": 60
+            }
+          ],
+          "protocols": [
+            {
+              "x402": {}
+            },
+            {
+              "mpp": {
+                "method": "evm",
+                "intent": "charge",
+                "currency": "USD"
+              }
+            }
+          ],
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.001"
+          },
+          "inputSchema": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "title": "Input",
+            "properties": {
+              "ens": {
+                "type": "string"
+              }
+            }
+          }
+        }
       }
     },
     "/ens/v2/reverse": {
       "get": {
         "operationId": "ReverseV2ReadController_reverse",
         "summary": "Reverse-resolve ENS names from address(es) (single or batch)",
-        "description": "ENSIP-19 reverse resolution with a 3-step fallback chain per slot: (1) on-chain lookup with the caller-supplied (or interop-derived) coinType, (2) on-chain lookup with the ENSIP-19 default coinType (0x80000000) when step 1 returns null, (3) JustaName offchain primary-name store when both on-chain attempts return null. The response field `viaUniversalResolver` is true for steps 1+2 and false for step 3 so callers can distinguish on-chain from JAN-served names. Repeat the address query parameter (?address=0x..&address=0x..) to batch up to 50 addresses. Caller must supply an HTTPS rpcUrl, preferably via the X-Rpc-Url header (recommended; keeps the API key out of access logs) or alternatively as a query parameter. Private/loopback/link-local hosts are rejected. Response shape is polymorphic by request cardinality: an object for single-address requests, an array (in input order, per-item error in `error`) for batches.",
+        "description": "ENSIP-19 reverse resolution with a 3-step fallback chain per slot: (1) on-chain lookup with the caller-supplied (or interop-derived) coinType, (2) on-chain lookup with the ENSIP-19 default coinType (0x80000000) when step 1 returns null, (3) JustaName offchain primary-name store when both on-chain attempts return null. The response field `viaUniversalResolver` is true for steps 1+2 and false for step 3 so callers can distinguish on-chain from JAN-served names. Repeat the address query parameter (?address=0x..&address=0x..) to batch up to 50 addresses. Pass records=true to also forward-resolve each resolved name and attach its ENS records (texts, addresses, contentHash -- same shape as /v2/resolve) under `records`; slots with name: null or a failed records lookup carry records: null. The caller MAY supply an HTTPS rpcUrl, preferably via the X-Rpc-Url header (recommended; keeps the API key out of access logs) or as a query parameter -- doing so makes the request free (the caller pays the upstream RPC compute). Without an rpcUrl the request is paid (x402 or MPP, see 402 challenge). Private/loopback/link-local hosts are rejected. Response shape is polymorphic by request cardinality: an object for single-address requests, an array (in input order, per-item error in `error`) for batches.",
         "parameters": [
           {
             "name": "address",
@@ -2480,11 +3235,13 @@
             }
           },
           {
-            "name": "x-rpc-url",
-            "required": true,
-            "in": "header",
+            "name": "records",
+            "required": false,
+            "in": "query",
+            "description": "When true, every slot that reverse-resolved to a name is also forward-resolved and its ENS records (texts, addresses, contentHash) are attached under `records`. Slots whose name is null carry `records: null`, as do slots whose records lookup failed (the reverse answer itself is still served). Adds one batched forward resolution against the same rpcUrl.",
             "schema": {
-              "type": "string"
+              "example": true,
+              "type": "boolean"
             }
           },
           {
@@ -2525,9 +3282,19 @@
             }
           },
           {
+            "description": "When true, every slot that reverse-resolved to a name is also forward-resolved and its ENS records (texts, addresses, contentHash) are attached under `records`. Slots whose name is null carry `records: null`, as do slots whose records lookup failed (the reverse answer itself is still served). Adds one batched forward resolution against the same rpcUrl.",
+            "required": false,
+            "name": "records",
+            "in": "query",
+            "schema": {
+              "example": true,
+              "type": "boolean"
+            }
+          },
+          {
             "name": "X-Rpc-Url",
             "in": "header",
-            "description": "Preferred location for the caller-supplied rpcUrl. Takes precedence over the rpcUrl query parameter when both are present. Use this in production so the API key does not land in HTTP access logs.",
+            "description": "Optional caller-supplied rpcUrl. Takes precedence over the rpcUrl query parameter when both are present. When supplied, the route is free (BYO compute). When omitted, the route falls back to a server-managed RPC and requires payment.",
             "required": false,
             "schema": {
               "type": "string"
@@ -2535,6 +3302,9 @@
           }
         ],
         "responses": {
+          "402": {
+            "description": "Payment Required. The route accepts x402 v2 and MPP-charge draft-01. See PAYMENT-REQUIRED and WWW-Authenticate headers for the full challenge; pay 0.001 USDC on Base or send X-Rpc-Url to bypass."
+          },
           "default": {
             "description": "Reverse resolved successfully.",
             "content": {
@@ -2547,8 +3317,229 @@
           }
         },
         "tags": [
-          "Reverse V2"
-        ]
+          "Resolution"
+        ],
+        "x-payment-info": {
+          "authMode": "payment",
+          "offers": [
+            {
+              "amount": "1000",
+              "currency": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "description": "ENSIP-19 reverse resolution with a 3-step fallback chain per slot: (1) on-chain lookup with the caller-supplied (or interop-derived) coinType, (2) on-chain lookup with the ENSIP-19 default coinType (0x80000000) when step 1 returns null, (3) JustaName offchain primary-name store when both on-chain attempts return null. The response field `viaUniversalResolver` is true for steps 1+2 and false for step 3 so callers can distinguish on-chain from JAN-served names. Repeat the address query parameter (?address=0x..&address=0x..) to batch up to 50 addresses. Pass records=true to also forward-resolve each resolved name and attach its ENS records (texts, addresses, contentHash -- same shape as /v2/resolve) under `records`; slots with name: null or a failed records lookup carry records: null. The caller MAY supply an HTTPS rpcUrl, preferably via the X-Rpc-Url header (recommended; keeps the API key out of access logs) or as a query parameter -- doing so makes the request free (the caller pays the upstream RPC compute). Without an rpcUrl the request is paid (x402 or MPP, see 402 challenge). Private/loopback/link-local hosts are rejected. Response shape is polymorphic by request cardinality: an object for single-address requests, an array (in input order, per-item error in `error`) for batches.",
+              "intent": "charge",
+              "method": "evm",
+              "expires": 60
+            }
+          ],
+          "protocols": [
+            {
+              "x402": {}
+            },
+            {
+              "mpp": {
+                "method": "evm",
+                "intent": "charge",
+                "currency": "USD"
+              }
+            }
+          ],
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.001"
+          },
+          "inputSchema": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "title": "Input",
+            "properties": {
+              "address": {
+                "type": "string"
+              },
+              "coinType": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ens/v2/pricing": {
+      "get": {
+        "operationId": "PricingV2ReadController_list",
+        "summary": "List paid routes and their prices",
+        "description": "Free discovery endpoint. Returns the list of paid routes with their current scheme, amount (in base units), asset, CAIP-2 network and recipient address. Callers can read this BEFORE attempting to pay so they know what to authorize. Pricing changes require a deploy; this list is the canonical source of truth used by both the discovery endpoint and the @Paid() guards on the routes themselves.",
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Pricing fetched successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PricingApiResponseSuccessSwagger"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Discovery"
+        ],
+        "x-payment-info": {
+          "authMode": "none"
+        }
+      }
+    },
+    "/.well-known/x402.json": {
+      "get": {
+        "operationId": "WellKnownController_x402",
+        "summary": "Public x402 service catalog (v2 wire format)",
+        "description": "Free discovery manifest per the x402 community well-known convention. Returns the same paid routes as /v2/pricing but shaped as { x402Version, services[{ resource, accepts[] }] } so agents (Bazaar, agentcash, x402scan crawlers) can index without firing a real 402.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Discovery"
+        ],
+        "x-payment-info": {
+          "authMode": "none"
+        }
+      }
+    },
+    "/.well-known/x402": {
+      "get": {
+        "operationId": "WellKnownController_x402Canonical",
+        "summary": "Public x402 service catalog (canonical path alias)",
+        "description": "Identical payload to /.well-known/x402.json. Kept as a separate route so spec-compliant crawlers that probe the no-extension path find us without a 404 round-trip.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Discovery"
+        ],
+        "x-payment-info": {
+          "authMode": "none"
+        }
+      }
+    },
+    "/ens/v1/primary-name/address": {
+      "get": {
+        "operationId": "PrimaryNameReadController_getPrimaryNameByAddress",
+        "summary": "Get by Address",
+        "description": "Retrieves primary name for a given address",
+        "parameters": [
+          {
+            "name": "address",
+            "required": true,
+            "in": "query",
+            "description": "The address of the primary name",
+            "schema": {
+              "example": "0xb965a5f3a0fC18D84E68883ccAd508445a7917A8",
+              "type": "string"
+            }
+          },
+          {
+            "name": "chainId",
+            "required": true,
+            "in": "query",
+            "description": "Chain id, we only support Ethereum Mainnet and Sepolia Testnet (1 for mainnet, 11155111 for sepolia)",
+            "schema": {
+              "example": 11155111,
+              "enum": [
+                1,
+                11155111
+              ],
+              "type": "number"
+            }
+          },
+          {
+            "description": "The address of the primary name",
+            "required": true,
+            "name": "address",
+            "in": "query",
+            "schema": {
+              "example": "0xb965a5f3a0fC18D84E68883ccAd508445a7917A8",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Chain id, we only support Ethereum Mainnet and Sepolia Testnet (1 for mainnet, 11155111 for sepolia)",
+            "required": true,
+            "name": "chainId",
+            "in": "query",
+            "schema": {
+              "example": 11155111,
+              "enum": [
+                1,
+                11155111
+              ],
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "The primary name was fetched successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrimaryNameApiResponseSuccessSwagger"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Primary Name"
+        ],
+        "x-payment-info": {
+          "authMode": "none"
+        }
+      }
+    },
+    "/ens/v1/primary-name/batch/address": {
+      "post": {
+        "operationId": "PrimaryNameReadController_getPrimaryNamesInBatch",
+        "summary": "Get Primary Names in Batch",
+        "description": "Retrieves primary names for an array of addresses on a given chainId.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PrimaryNameGetByAddressBatchApiRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "The primary names were fetched successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PrimaryNameApiResponseSuccessSwagger"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Primary Name"
+        ],
+        "x-payment-info": {
+          "authMode": "none"
+        }
       }
     },
     "/ens/v2/primary-names/{address}/{chainId}": {
@@ -2596,7 +3587,10 @@
         },
         "tags": [
           "Primary Name V2"
-        ]
+        ],
+        "x-payment-info": {
+          "authMode": "none"
+        }
       }
     },
     "/ens/v2/primary-names/{chainId}": {
@@ -2776,7 +3770,10 @@
         },
         "tags": [
           "Primary Name V2"
-        ]
+        ],
+        "x-payment-info": {
+          "authMode": "none"
+        }
       }
     },
     "/ens/v1/primary-name/set-primary-name": {
@@ -2837,7 +3834,10 @@
         },
         "tags": [
           "Primary Name"
-        ]
+        ],
+        "x-payment-info": {
+          "authMode": "none"
+        }
       }
     },
     "/ens/v2/primary-names": {
@@ -2892,7 +3892,10 @@
         },
         "tags": [
           "Primary Name V2"
-        ]
+        ],
+        "x-payment-info": {
+          "authMode": "none"
+        }
       }
     },
     "/api-key/v1/api-key/key": {
@@ -3133,6 +4136,151 @@
   },
   "components": {
     "schemas": {
+      "SiweRequestChallengeApiResponse": {
+        "type": "object",
+        "properties": {
+          "challenge": {
+            "type": "string",
+            "example": "domain wants you to sign in with your Ethereum account:\nAddress\n\nPlease sign this message to verify that you want to add/update your subdomain provided by justawallet to your account Address using JustAName\n\nURI: uri\nVersion: 1\nChain ID: ChainId\nNonce: nonce\nIssued At: Date\nExpiration Time: Date"
+          }
+        },
+        "required": [
+          "challenge"
+        ]
+      },
+      "SiweRequestChallengeApiResponseSuccessSwagger": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "number",
+            "example": 200,
+            "description": "The status code of the response."
+          },
+          "result": {
+            "$ref": "#/components/schemas/SiweRequestChallengeApiResponseResultSwagger"
+          }
+        },
+        "required": [
+          "statusCode",
+          "result"
+        ]
+      },
+      "SiweRequestAddMAppPermissionChallengeApiResponse": {
+        "type": "object",
+        "properties": {
+          "challenge": {
+            "type": "string",
+            "example": "domain wants you to sign in with your Ethereum account:\nAddress\n\nPlease sign this message to verify that you want to add/update your subdomain provided by justawallet to your account Address using JustAName\n\nURI: uri\nVersion: 1\nChain ID: ChainId\nNonce: nonce\nIssued At: Date\nExpiration Time: Date"
+          }
+        },
+        "required": [
+          "challenge"
+        ]
+      },
+      "SiweRequestAddMAppPermissionChallengeApiResponseSuccessSwagger": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "number",
+            "example": 200,
+            "description": "The status code of the response."
+          },
+          "result": {
+            "$ref": "#/components/schemas/SiweRequestAddMAppPermissionChallengeApiResponseResultSwagger"
+          }
+        },
+        "required": [
+          "statusCode",
+          "result"
+        ]
+      },
+      "SiweRequestAppendMAppFieldChallengeApiResponse": {
+        "type": "object",
+        "properties": {
+          "challenge": {
+            "type": "string",
+            "example": "domain wants you to sign in with your Ethereum account:\nAddress\n\nPlease sign this message to verify that you want to add/update your subdomain provided by justawallet to your account Address using JustAName\n\nURI: uri\nVersion: 1\nChain ID: ChainId\nNonce: nonce\nIssued At: Date\nExpiration Time: Date"
+          }
+        },
+        "required": [
+          "challenge"
+        ]
+      },
+      "SiweRequestAppendMAppFieldChallengeApiResponseSuccessSwagger": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "number",
+            "example": 200,
+            "description": "The status code of the response."
+          },
+          "result": {
+            "$ref": "#/components/schemas/SiweRequestAppendMAppFieldChallengeApiResponseResultSwagger"
+          }
+        },
+        "required": [
+          "statusCode",
+          "result"
+        ]
+      },
+      "SiweRequestRevokeMAppPermissionChallengeApiResponse": {
+        "type": "object",
+        "properties": {
+          "challenge": {
+            "type": "string",
+            "example": "domain wants you to sign in with your Ethereum account:\nAddress\n\nPlease sign this message to verify that you want to add/update your subdomain provided by justawallet to your account Address using JustAName\n\nURI: uri\nVersion: 1\nChain ID: ChainId\nNonce: nonce\nIssued At: Date\nExpiration Time: Date"
+          }
+        },
+        "required": [
+          "challenge"
+        ]
+      },
+      "SiweRequestRevokeMAppPermissionChallengeApiResponseSuccessSwagger": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "number",
+            "example": 200,
+            "description": "The status code of the response."
+          },
+          "result": {
+            "$ref": "#/components/schemas/SiweRequestRevokeMAppPermissionChallengeApiResponseResultSwagger"
+          }
+        },
+        "required": [
+          "statusCode",
+          "result"
+        ]
+      },
+      "SiweVerifyMessageApiResponse": {
+        "type": "object",
+        "properties": {
+          "verified": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "required": [
+          "verified"
+        ]
+      },
+      "SiweVerifyMessageApiResponseSuccessSwagger": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "number",
+            "example": 200,
+            "description": "The status code of the response."
+          },
+          "result": {
+            "$ref": "#/components/schemas/SiweVerifyMessageApiResponseResultSwagger"
+          }
+        },
+        "required": [
+          "statusCode",
+          "result"
+        ]
+      },
       "SiweChallengeApiResponse": {
         "type": "object",
         "properties": {
@@ -3950,6 +5098,36 @@
           "result"
         ]
       },
+      "PricingApiResponse": {
+        "type": "object",
+        "properties": {
+          "routes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PricingApiEntry"
+            }
+          }
+        },
+        "required": [
+          "routes"
+        ]
+      },
+      "PricingApiResponseSuccessSwagger": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "number",
+            "example": 200
+          },
+          "result": {
+            "$ref": "#/components/schemas/PricingApiResponseResultSwagger"
+          }
+        },
+        "required": [
+          "statusCode",
+          "result"
+        ]
+      },
       "PrimaryNameApiResponse": {
         "type": "object",
         "properties": {
@@ -4125,5 +5303,8 @@
         ]
       }
     }
+  },
+  "x-discovery": {
+    "ownershipProofs": []
   }
 }
