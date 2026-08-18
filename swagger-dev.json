@@ -1135,7 +1135,7 @@
       "get": {
         "operationId": "SubdomainReadController_findAll",
         "summary": "Get All Subnames by Criteria",
-        "description": "Retrieves all subnames matching the specified criteria",
+        "description": "Retrieves all subnames matching the specified criteria. At least one of workspaceId, ensDomains or address is required, so the listing is always scoped to a known owner.",
         "parameters": [
           {
             "name": "page",
@@ -2410,24 +2410,15 @@
       "get": {
         "operationId": "SubnameV2ReadController_findAll",
         "summary": "Get All Subnames by Criteria",
-        "description": "Retrieves all subnames matching the specified criteria",
+        "description": "Retrieves all subnames matching the specified criteria. At least one of workspaceId, ensDomains or address is required, so the listing is always scoped to a known owner.",
         "parameters": [
           {
-            "name": "chainId",
-            "required": true,
-            "in": "query",
-            "description": "The chain id to filter by",
-            "schema": {
-              "example": 1,
-              "type": "number"
-            }
-          },
-          {
             "name": "page",
             "required": false,
             "in": "query",
-            "description": "Page number for pagination",
+            "description": "The requested page number",
             "schema": {
+              "default": 1,
               "example": 1,
               "type": "number"
             }
@@ -2436,9 +2427,49 @@
             "name": "limit",
             "required": false,
             "in": "query",
-            "description": "Number of items per page",
+            "description": "The number of items to return per page",
             "schema": {
+              "maximum": 100,
+              "default": 20,
               "example": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "orderBy",
+            "required": false,
+            "in": "query",
+            "description": "The order by field",
+            "schema": {
+              "example": "createdAt",
+              "enum": [
+                "createdAt",
+                "subnameCount"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "orderDirection",
+            "required": false,
+            "in": "query",
+            "description": "The order direction",
+            "schema": {
+              "example": "desc",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "chainId",
+            "required": true,
+            "in": "query",
+            "description": "The chain id to filter by",
+            "schema": {
+              "example": 1,
               "type": "number"
             }
           },
@@ -2510,10 +2541,33 @@
             }
           },
           {
-            "name": "orderBy",
+            "description": "The requested page number",
             "required": false,
+            "name": "page",
             "in": "query",
+            "schema": {
+              "default": 1,
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "description": "The number of items to return per page",
+            "required": false,
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "maximum": 100,
+              "default": 20,
+              "example": 20,
+              "type": "number"
+            }
+          },
+          {
             "description": "The order by field",
+            "required": false,
+            "name": "orderBy",
+            "in": "query",
             "schema": {
               "example": "createdAt",
               "enum": [
@@ -2524,10 +2578,10 @@
             }
           },
           {
-            "name": "orderDirection",
-            "required": false,
-            "in": "query",
             "description": "The order direction",
+            "required": false,
+            "name": "orderDirection",
+            "in": "query",
             "schema": {
               "example": "desc",
               "enum": [
@@ -2544,26 +2598,6 @@
             "in": "query",
             "schema": {
               "example": 1,
-              "type": "number"
-            }
-          },
-          {
-            "description": "Page number for pagination",
-            "required": false,
-            "name": "page",
-            "in": "query",
-            "schema": {
-              "example": 1,
-              "type": "number"
-            }
-          },
-          {
-            "description": "Number of items per page",
-            "required": false,
-            "name": "limit",
-            "in": "query",
-            "schema": {
-              "example": 20,
               "type": "number"
             }
           },
@@ -2632,34 +2666,6 @@
               "default": true,
               "example": true,
               "type": "boolean"
-            }
-          },
-          {
-            "description": "The order by field",
-            "required": false,
-            "name": "orderBy",
-            "in": "query",
-            "schema": {
-              "example": "createdAt",
-              "enum": [
-                "createdAt",
-                "subnameCount"
-              ],
-              "type": "string"
-            }
-          },
-          {
-            "description": "The order direction",
-            "required": false,
-            "name": "orderDirection",
-            "in": "query",
-            "schema": {
-              "example": "desc",
-              "enum": [
-                "asc",
-                "desc"
-              ],
-              "type": "string"
             }
           }
         ],
