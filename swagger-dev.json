@@ -5,7 +5,7 @@
     "description": "Welcome to the JustaName API Reference, our centralized location for all things JustaName. Here you can find all the APIs needed to integrate with our services.",
     "version": "1.0",
     "contact": {},
-    "x-guidance": "JustaName ENS resolution: GET /ens/v2/resolve?ens=<name> for forward, GET /ens/v2/reverse?address=<addr> for reverse. Both are pay-per-call (0.005 USDC on Base via x402 v2 or MPP-charge draft-01). Send X-Rpc-Url with your own HTTPS Ethereum RPC URL to skip payment (caller pays upstream RPC compute). Batch up to 50 names/addresses per call by repeating the query parameter."
+    "x-guidance": "JustaName ENS resolution: GET /ens/v2/resolve?ens=<name> for forward, GET /ens/v2/reverse?address=<addr> for reverse, GET /ens/v2/enrich?address=<addr> for the name plus the full profile its owner published. All three are pay-per-call in USDC on Base (x402 v2 or MPP-charge draft-01); GET /ens/v2/pricing lists the current amounts. Send X-Rpc-Url with your own HTTPS Ethereum RPC URL to skip payment (caller pays upstream RPC compute). Batch up to 50 names/addresses per call by repeating the query parameter."
   },
   "servers": [
     {
@@ -21,7 +21,7 @@
   "tags": [
     {
       "name": "Resolution",
-      "description": "Forward and reverse ENS resolution. Free when the caller supplies its own RPC URL (X-Rpc-Url header or rpcUrl query param); otherwise the route answers 402 and accepts per-request payment of 0.005 USDC on Base via x402 v2 or MPP-charge. See the Discovery tag for machine-readable pricing."
+      "description": "Forward and reverse ENS resolution, plus the enriched address-to-profile call. Free when the caller supplies its own RPC URL (X-Rpc-Url header or rpcUrl query param); otherwise the route answers 402 and accepts per-request payment in USDC on Base via x402 v2 or MPP-charge. Each route carries its own price: see the Discovery tag or the 402 challenge."
     },
     {
       "name": "Discovery",
@@ -3353,6 +3353,159 @@
             "mode": "fixed",
             "currency": "USD",
             "amount": "0.005"
+          },
+          "inputSchema": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "title": "Input",
+            "properties": {
+              "address": {
+                "type": "string"
+              },
+              "coinType": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ens/v2/enrich": {
+      "get": {
+        "operationId": "EnrichV2ReadController_enrich",
+        "summary": "Resolve an address into its ENS name and full published profile",
+        "description": "Reverse-resolves the address and forward-resolves the name it finds, returning the ENS profile behind it in one call: text records (socials, url, email, avatar), multichain addresses and content hash. Repeat the address query parameter (?address=0x..&address=0x..) to batch up to 50 addresses. This is /v2/reverse with records always on, priced as its own resource. Returns only what the name owner published on ENS: no wallet clustering, no related-address inference, no third-party sources. An address with no reverse record answers name: null and records: null rather than a guess (ENSIP-19 is opt-in). A records lookup that fails answers 502 rather than a 200 carrying nulls, since the records are what was paid for; payment settles before the lookup runs, so send an Idempotency-Key if you want the retry to reuse it. The caller MAY supply an HTTPS rpcUrl, preferably via the X-Rpc-Url header, which makes the request free (the caller pays the upstream RPC compute).",
+        "parameters": [
+          {
+            "name": "address",
+            "required": true,
+            "in": "query",
+            "description": "Address(es) to reverse-resolve. Pass once for a single resolution or repeat to batch (?address=0x...&address=0x...). Up to 50 per request. Each entry may be a plain hex address (0x...) or an interop-formatted address (0x...@eip155:<chainId> or 0x...@<chainLabel>); when the chain suffix is present it overrides the request-level coinType for that slot.",
+            "schema": {
+              "minItems": 1,
+              "maxItems": 50,
+              "example": [
+                "0xb965a5f3a0fC18D84E68883ccAd508445a7917A8"
+              ],
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "coinType",
+            "required": false,
+            "in": "query",
+            "description": "ENSIP-19 coinType identifying which chain's reverse record to look up. Mainnet primary = 60. EVM L2 primary = 0x80000000 | chainId (e.g. Base = 2147492837 / 0x80002105). Optional only when every address carries an interop chain suffix (e.g. 0x...@eip155:1) -- for plain addresses the coinType is required, otherwise that slot fails with a 400. When both the suffix and coinType are supplied for the same address, the suffix wins.",
+            "schema": {
+              "example": 60,
+              "type": "number"
+            }
+          },
+          {
+            "name": "rpcUrl",
+            "required": false,
+            "in": "query",
+            "description": "HTTPS RPC URL used for on-chain reads. Caller-supplied so the cost of the resolution is paid by the caller, not the service. PREFER the X-Rpc-Url request header instead -- query strings end up in access logs and most rpcUrls embed an API key. Must use https. Private/loopback/link-local hosts are rejected.",
+            "schema": {
+              "example": "https://eth-mainnet.g.alchemy.com/v2/YOUR_KEY",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Address(es) to reverse-resolve. Pass once for a single resolution or repeat to batch (?address=0x...&address=0x...). Up to 50 per request. Each entry may be a plain hex address (0x...) or an interop-formatted address (0x...@eip155:<chainId> or 0x...@<chainLabel>); when the chain suffix is present it overrides the request-level coinType for that slot.",
+            "name": "address",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "minItems": 1,
+              "maxItems": 50,
+              "example": [
+                "0xb965a5f3a0fC18D84E68883ccAd508445a7917A8"
+              ],
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "description": "ENSIP-19 coinType identifying which chain's reverse record to look up. Mainnet primary = 60. EVM L2 primary = 0x80000000 | chainId (e.g. Base = 2147492837 / 0x80002105). Optional only when every address carries an interop chain suffix (e.g. 0x...@eip155:1) -- for plain addresses the coinType is required, otherwise that slot fails with a 400. When both the suffix and coinType are supplied for the same address, the suffix wins.",
+            "required": false,
+            "name": "coinType",
+            "in": "query",
+            "schema": {
+              "example": 60,
+              "type": "number"
+            }
+          },
+          {
+            "description": "HTTPS RPC URL used for on-chain reads. Caller-supplied so the cost of the resolution is paid by the caller, not the service. PREFER the X-Rpc-Url request header instead -- query strings end up in access logs and most rpcUrls embed an API key. Must use https. Private/loopback/link-local hosts are rejected.",
+            "required": false,
+            "name": "rpcUrl",
+            "in": "query",
+            "schema": {
+              "example": "https://eth-mainnet.g.alchemy.com/v2/YOUR_KEY",
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-Rpc-Url",
+            "in": "header",
+            "description": "Optional caller-supplied rpcUrl. Takes precedence over the rpcUrl query parameter when both are present. When supplied, the route is free (BYO compute). When omitted, the route falls back to a server-managed RPC and requires payment.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "402": {
+            "description": "Payment Required. The route accepts x402 v2 and MPP-charge draft-01. See PAYMENT-REQUIRED and WWW-Authenticate headers for the full challenge; pay 0.02 USDC on Base or send X-Rpc-Url to bypass."
+          },
+          "default": {
+            "description": "Address enriched successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReverseApiResponseSuccessSwagger"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Resolution"
+        ],
+        "x-payment-info": {
+          "authMode": "payment",
+          "offers": [
+            {
+              "amount": "20000",
+              "currency": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "description": "Reverse-resolves the address and forward-resolves the name it finds, returning the ENS profile behind it in one call: text records (socials, url, email, avatar), multichain addresses and content hash. Repeat the address query parameter (?address=0x..&address=0x..) to batch up to 50 addresses. This is /v2/reverse with records always on, priced as its own resource. Returns only what the name owner published on ENS: no wallet clustering, no related-address inference, no third-party sources. An address with no reverse record answers name: null and records: null rather than a guess (ENSIP-19 is opt-in). A records lookup that fails answers 502 rather than a 200 carrying nulls, since the records are what was paid for; payment settles before the lookup runs, so send an Idempotency-Key if you want the retry to reuse it. The caller MAY supply an HTTPS rpcUrl, preferably via the X-Rpc-Url header, which makes the request free (the caller pays the upstream RPC compute).",
+              "intent": "charge",
+              "method": "evm",
+              "expires": 60
+            }
+          ],
+          "protocols": [
+            {
+              "x402": {}
+            },
+            {
+              "mpp": {
+                "method": "evm",
+                "intent": "charge",
+                "currency": "USD"
+              }
+            }
+          ],
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.02"
           },
           "inputSchema": {
             "$schema": "https://json-schema.org/draft/2020-12/schema",
