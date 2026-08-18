@@ -5,7 +5,7 @@
     "description": "Welcome to the JustaName API Reference, our centralized location for all things JustaName. Here you can find all the APIs needed to integrate with our services.",
     "version": "1.0",
     "contact": {},
-    "x-guidance": "JustaName ENS resolution: GET /ens/v2/resolve?ens=<name> for forward, GET /ens/v2/reverse?address=<addr> for reverse. Both are pay-per-call (0.001 USDC on Base via x402 v2 or MPP-charge draft-01). Send X-Rpc-Url with your own HTTPS Ethereum RPC URL to skip payment (caller pays upstream RPC compute). Batch up to 50 names/addresses per call by repeating the query parameter."
+    "x-guidance": "JustaName ENS resolution: GET /ens/v2/resolve?ens=<name> for forward, GET /ens/v2/reverse?address=<addr> for reverse. Both are pay-per-call (0.005 USDC on Base via x402 v2 or MPP-charge draft-01). Send X-Rpc-Url with your own HTTPS Ethereum RPC URL to skip payment (caller pays upstream RPC compute). Batch up to 50 names/addresses per call by repeating the query parameter."
   },
   "servers": [
     {
@@ -21,7 +21,7 @@
   "tags": [
     {
       "name": "Resolution",
-      "description": "Forward and reverse ENS resolution. Free when the caller supplies its own RPC URL (X-Rpc-Url header or rpcUrl query param); otherwise the route answers 402 and accepts per-request payment of 0.001 USDC on Base via x402 v2 or MPP-charge. See the Discovery tag for machine-readable pricing."
+      "description": "Forward and reverse ENS resolution. Free when the caller supplies its own RPC URL (X-Rpc-Url header or rpcUrl query param); otherwise the route answers 402 and accepts per-request payment of 0.005 USDC on Base via x402 v2 or MPP-charge. See the Discovery tag for machine-readable pricing."
     },
     {
       "name": "Discovery",
@@ -3139,7 +3139,7 @@
         ],
         "responses": {
           "402": {
-            "description": "Payment Required. The route accepts x402 v2 and MPP-charge draft-01. See PAYMENT-REQUIRED and WWW-Authenticate headers for the full challenge; pay 0.001 USDC on Base or send X-Rpc-Url to bypass."
+            "description": "Payment Required. The route accepts x402 v2 and MPP-charge draft-01. See PAYMENT-REQUIRED and WWW-Authenticate headers for the full challenge; pay 0.005 USDC on Base or send X-Rpc-Url to bypass."
           },
           "default": {
             "description": "Records resolved successfully.",
@@ -3159,7 +3159,7 @@
           "authMode": "payment",
           "offers": [
             {
-              "amount": "1000",
+              "amount": "5000",
               "currency": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
               "description": "Resolves one or more ENS names through the on-chain CCIP-Read flow. Repeat the ens query parameter (?ens=a.eth&ens=b.eth) to batch up to 50 names. The caller MAY supply an HTTPS rpcUrl, preferably via the X-Rpc-Url header (recommended; keeps the API key out of access logs) or as a query parameter -- doing so makes the request free (the caller pays the upstream RPC compute). Without an rpcUrl the request is paid (x402 or MPP, see 402 challenge). Private/loopback/link-local hosts are rejected. Response shape is polymorphic by request cardinality: an object for single-ens requests, an array (in input order, null for failed entries) for batches.",
               "intent": "charge",
@@ -3182,7 +3182,7 @@
           "price": {
             "mode": "fixed",
             "currency": "USD",
-            "amount": "0.001"
+            "amount": "0.005"
           },
           "inputSchema": {
             "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -3309,7 +3309,7 @@
         ],
         "responses": {
           "402": {
-            "description": "Payment Required. The route accepts x402 v2 and MPP-charge draft-01. See PAYMENT-REQUIRED and WWW-Authenticate headers for the full challenge; pay 0.001 USDC on Base or send X-Rpc-Url to bypass."
+            "description": "Payment Required. The route accepts x402 v2 and MPP-charge draft-01. See PAYMENT-REQUIRED and WWW-Authenticate headers for the full challenge; pay 0.005 USDC on Base or send X-Rpc-Url to bypass."
           },
           "default": {
             "description": "Reverse resolved successfully.",
@@ -3329,7 +3329,7 @@
           "authMode": "payment",
           "offers": [
             {
-              "amount": "1000",
+              "amount": "5000",
               "currency": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
               "description": "ENSIP-19 reverse resolution with a 3-step fallback chain per slot: (1) on-chain lookup with the caller-supplied (or interop-derived) coinType, (2) on-chain lookup with the ENSIP-19 default coinType (0x80000000) when step 1 returns null, (3) JustaName offchain primary-name store when both on-chain attempts return null. The response field `viaUniversalResolver` is true for steps 1+2 and false for step 3 so callers can distinguish on-chain from JAN-served names. Repeat the address query parameter (?address=0x..&address=0x..) to batch up to 50 addresses. Pass records=true to also forward-resolve each resolved name and attach its ENS records (texts, addresses, contentHash -- same shape as /v2/resolve) under `records`; slots with name: null or a failed records lookup carry records: null. The caller MAY supply an HTTPS rpcUrl, preferably via the X-Rpc-Url header (recommended; keeps the API key out of access logs) or as a query parameter -- doing so makes the request free (the caller pays the upstream RPC compute). Without an rpcUrl the request is paid (x402 or MPP, see 402 challenge). Private/loopback/link-local hosts are rejected. Response shape is polymorphic by request cardinality: an object for single-address requests, an array (in input order, per-item error in `error`) for batches.",
               "intent": "charge",
@@ -3352,7 +3352,7 @@
           "price": {
             "mode": "fixed",
             "currency": "USD",
-            "amount": "0.001"
+            "amount": "0.005"
           },
           "inputSchema": {
             "$schema": "https://json-schema.org/draft/2020-12/schema",
