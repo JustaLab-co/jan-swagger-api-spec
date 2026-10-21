@@ -4209,6 +4209,60 @@
         ]
       }
     },
+    "/proxy/v1/simulate": {
+      "post": {
+        "operationId": "SimulationController_simulate",
+        "summary": "Simulate calls before sending them",
+        "description": "Answers whether the calls would succeed if the sender sent them now, and which call fails and why if not. Nothing is signed or sent.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SimulateApiRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Simulation result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "properties": {
+                        "statusCode": {
+                          "type": "number",
+                          "example": 200
+                        },
+                        "result": {
+                          "properties": {
+                            "data": {
+                              "type": "object",
+                              "$ref": "#/components/schemas/SimulateApiResponse"
+                            },
+                            "error": {
+                              "type": "string",
+                              "nullable": true
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Proxy"
+        ]
+      }
+    },
     "/wallet/v2/passkeys": {
       "post": {
         "operationId": "PasskeyV2WriteController_register",
@@ -5429,6 +5483,189 @@
           "result"
         ]
       },
+      "TokensQueryParams": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "object",
+            "description": "The page number (defaults to 1)",
+            "example": 1
+          },
+          "limit": {
+            "type": "object",
+            "description": "The number of items per page (defaults to 20)",
+            "example": 20
+          },
+          "chainIds": {
+            "description": "Chain IDs to filter tokens by",
+            "example": [
+              1,
+              137,
+              56
+            ],
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "address": {
+            "type": "string",
+            "description": "Address to filter tokens by",
+            "example": "0x1234567890abcdef1234567890abcdef12345678"
+          }
+        },
+        "required": [
+          "page",
+          "limit",
+          "address"
+        ]
+      },
+      "TokensForAddressApiResponseSuccessSwagger": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "number",
+            "example": 200,
+            "description": "The status code of the response."
+          },
+          "result": {
+            "$ref": "#/components/schemas/TokensForAddressApiResponseResultSwagger"
+          }
+        },
+        "required": [
+          "statusCode",
+          "result"
+        ]
+      },
+      "SimulateApiRequest": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "description": "Chain id, as a number or a hex string",
+            "oneOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string",
+                "pattern": "^0x[0-9a-fA-F]+$"
+              }
+            ],
+            "example": 8453
+          },
+          "sender": {
+            "type": "string",
+            "description": "The account that would send the calls",
+            "example": "0x1f4201aED7443a59a3f849E6A07dbF438FFB6C62"
+          },
+          "calls": {
+            "description": "1 to 32 calls, at most 128 KB of calldata in total",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SimulateCallApiRequest"
+            }
+          },
+          "permissionId": {
+            "type": "string",
+            "description": "Simulate the calls as a spend under this permission"
+          },
+          "paymaster": {
+            "$ref": "#/components/schemas/SimulatePaymasterApiRequest"
+          }
+        },
+        "required": [
+          "chainId",
+          "sender",
+          "calls"
+        ]
+      },
+      "SimulateApiResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "success",
+              "reverted",
+              "error"
+            ],
+            "description": "'error' means the simulation could not tell, not that the calls would fail"
+          },
+          "callIndex": {
+            "type": "number",
+            "description": "Index of the failing call, when the failure is in one of the calls"
+          },
+          "reason": {
+            "type": "string",
+            "example": "ERC20: transfer amount exceeds balance"
+          },
+          "revertData": {
+            "type": "string",
+            "description": "Raw revert data of the failing call",
+            "example": "0x08c379a0"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "SimulateCallApiRequest": {
+        "type": "object",
+        "properties": {
+          "to": {
+            "type": "string",
+            "example": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+          },
+          "value": {
+            "type": "string",
+            "description": "Wei, as a hex or decimal string",
+            "example": "0x0"
+          },
+          "data": {
+            "type": "string",
+            "example": "0xa9059cbb000000000000000000000000000000000000000000000000000000000000dead0000000000000000000000000000000000000000000000000000000000000001"
+          }
+        },
+        "required": [
+          "to"
+        ]
+      },
+      "SimulatePaymasterApiRequest": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "none",
+              "erc20"
+            ]
+          },
+          "token": {
+            "type": "string",
+            "description": "Fee token, required for erc20",
+            "example": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+          }
+        },
+        "required": [
+          "mode"
+        ]
+      },
+      "TokensForAddressApiResponseResultSwagger": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/TokensForAddressApiResponse"
+          },
+          "error": {
+            "type": "string",
+            "description": "Null if no error occurred, otherwise the error message."
+          }
+        },
+        "required": [
+          "data",
+          "error"
+        ]
+      },
       "TokensForAddressApiResponse": {
         "type": "object",
         "properties": {
@@ -5447,21 +5684,61 @@
           "pagination"
         ]
       },
-      "TokensForAddressApiResponseSuccessSwagger": {
+      "PaginationApiResponse": {
         "type": "object",
         "properties": {
-          "statusCode": {
+          "totalCount": {
             "type": "number",
-            "example": 200,
-            "description": "The status code of the response."
+            "description": "The total count of items.",
+            "example": 20
           },
-          "result": {
-            "$ref": "#/components/schemas/TokensForAddressApiResponseResultSwagger"
+          "page": {
+            "type": "number",
+            "description": "The current page number.",
+            "example": 1
+          },
+          "limit": {
+            "type": "number",
+            "description": "The number of items per page.",
+            "example": 10
+          },
+          "totalPages": {
+            "type": "number",
+            "description": "The total number of pages.",
+            "example": 2
+          },
+          "nextPage": {
+            "type": "number",
+            "description": "The next page number if it exists, or null if there is no next page.",
+            "example": 2,
+            "nullable": true
+          },
+          "prevPage": {
+            "type": "number",
+            "description": "The previous page number if it exists, or null if there is no previous page.",
+            "example": null,
+            "nullable": true
+          },
+          "hasNextPage": {
+            "type": "boolean",
+            "description": "Indicates if there is a next page.",
+            "example": true
+          },
+          "hasPrevPage": {
+            "type": "boolean",
+            "description": "Indicates if there is a previous page.",
+            "example": false
           }
         },
         "required": [
-          "statusCode",
-          "result"
+          "totalCount",
+          "page",
+          "limit",
+          "totalPages",
+          "nextPage",
+          "prevPage",
+          "hasNextPage",
+          "hasPrevPage"
         ]
       }
     }
