@@ -4209,6 +4209,58 @@
         ]
       }
     },
+    "/proxy/v2/portfolio/defi": {
+      "get": {
+        "operationId": "PortfolioV2ReadController_getDefiPositions",
+        "summary": "Get DeFi Positions for Address",
+        "description": "Retrieve the DeFi positions (lending, liquidity pools, staking...) held by a wallet across multiple blockchain networks",
+        "parameters": [
+          {
+            "name": "address",
+            "required": true,
+            "in": "query",
+            "description": "Wallet address to get DeFi positions for",
+            "schema": {
+              "example": "0x742149f6aB17d7d2FD3A29ae2782b26EDa9c6F82",
+              "type": "string"
+            }
+          },
+          {
+            "name": "chainIds",
+            "required": true,
+            "in": "query",
+            "description": "Chain IDs to look up DeFi positions on - supports multiple chains",
+            "schema": {
+              "example": [
+                1,
+                8453
+              ],
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "DeFi positions with their deposits, loans, rewards and USD values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortfolioDefiApiResponseSuccessSwagger"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Portfolio V2",
+          "Public",
+          "Proxy"
+        ]
+      }
+    },
     "/proxy/v1/simulate": {
       "post": {
         "operationId": "SimulationController_simulate",
@@ -5537,6 +5589,22 @@
           "result"
         ]
       },
+      "PortfolioDefiApiResponseSuccessSwagger": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "number",
+            "example": 200
+          },
+          "result": {
+            "$ref": "#/components/schemas/PortfolioDefiApiResponseResultSwagger"
+          }
+        },
+        "required": [
+          "statusCode",
+          "result"
+        ]
+      },
       "SimulateApiRequest": {
         "type": "object",
         "properties": {
@@ -5648,6 +5716,383 @@
         },
         "required": [
           "mode"
+        ]
+      },
+      "PortfolioDefiApiResponseResultSwagger": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DefiPositionsApiResponse"
+              }
+            ]
+          },
+          "error": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          }
+        },
+        "required": [
+          "data",
+          "error"
+        ]
+      },
+      "DefiPositionsApiResponse": {
+        "type": "object",
+        "properties": {
+          "positions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DefiPositionApiResponse"
+            }
+          },
+          "failedChains": {
+            "description": "Chains that failed while others answered; absent when none failed",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DefiFailedChainApiResponse"
+            }
+          }
+        },
+        "required": [
+          "positions"
+        ]
+      },
+      "DefiPositionApiResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84-ethereum-aave v3 lending-deposit"
+          },
+          "type": {
+            "type": "string",
+            "example": "defi"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "example": "Aave V3 Lending"
+          },
+          "protocol": {
+            "$ref": "#/components/schemas/DefiProtocolApiResponse"
+          },
+          "chain": {
+            "$ref": "#/components/schemas/DefiChainApiResponse"
+          },
+          "valueUsd": {
+            "type": "number",
+            "nullable": true,
+            "example": 83103914.31
+          },
+          "valueUsdChange1d": {
+            "type": "number",
+            "nullable": true,
+            "example": -764585.74
+          },
+          "attributes": {
+            "$ref": "#/components/schemas/DefiPositionAttributesApiResponse"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "name",
+          "protocol",
+          "chain",
+          "valueUsd",
+          "valueUsdChange1d",
+          "attributes"
+        ]
+      },
+      "DefiFailedChainApiResponse": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "number",
+            "example": 8453
+          },
+          "error": {
+            "type": "string",
+            "example": "timeout of 8000ms exceeded"
+          }
+        },
+        "required": [
+          "chainId",
+          "error"
+        ]
+      },
+      "DefiProtocolApiResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true,
+            "example": "Aave V3 Lending"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "example": "Aave V3"
+          },
+          "url": {
+            "type": "string",
+            "nullable": true,
+            "example": "https://app.aave.com"
+          },
+          "iconUrl": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "url",
+          "iconUrl"
+        ]
+      },
+      "DefiChainApiResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true,
+            "example": "ethereum",
+            "description": "Provider chain slug"
+          },
+          "idNumeric": {
+            "type": "number",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "example": "Ethereum"
+          },
+          "iconUrl": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "idNumeric",
+          "name",
+          "iconUrl"
+        ]
+      },
+      "DefiPositionAttributesApiResponse": {
+        "type": "object",
+        "properties": {
+          "poolAddress": {
+            "type": "string",
+            "nullable": true,
+            "example": "0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2"
+          },
+          "rewardsValueUsd": {
+            "type": "number",
+            "nullable": true,
+            "example": 0
+          },
+          "rewardsUsdChange1d": {
+            "type": "number",
+            "nullable": true,
+            "example": 0
+          },
+          "deposits": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DefiPositionTokenApiResponse"
+            }
+          },
+          "loans": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DefiPositionTokenApiResponse"
+            }
+          },
+          "rewards": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DefiPositionTokenApiResponse"
+            }
+          },
+          "metaTokens": {
+            "description": "Tokens that represent the holding in its protocol, e.g. aEthUSDT",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DefiPositionTokenApiResponse"
+            }
+          },
+          "pnlLinks": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "compositeSymbol": {
+            "type": "string",
+            "nullable": true,
+            "example": "WETH/USDC",
+            "description": "Pair symbol for liquidity pools"
+          },
+          "assetType": {
+            "type": "string",
+            "nullable": true,
+            "example": "deposit",
+            "description": "token, lp, staking, loan, reward, stream, yield, farming, vesting, deposit or unknown"
+          },
+          "extra": {
+            "type": "object",
+            "additionalProperties": true,
+            "example": {
+              "health_factor": 1.82
+            },
+            "description": "Protocol-specific fields the provider sends but does not document, passed through as-is"
+          }
+        },
+        "required": [
+          "poolAddress",
+          "rewardsValueUsd",
+          "rewardsUsdChange1d",
+          "deposits",
+          "loans",
+          "rewards",
+          "metaTokens",
+          "pnlLinks",
+          "compositeSymbol",
+          "assetType",
+          "extra"
+        ]
+      },
+      "DefiPositionTokenApiResponse": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "nullable": true,
+            "example": "deposit",
+            "description": "deposit, loan, reward...; null for meta tokens"
+          },
+          "tokenId": {
+            "type": "string",
+            "nullable": true,
+            "example": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84"
+          },
+          "symbol": {
+            "type": "string",
+            "nullable": true,
+            "example": "stETH"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "example": "Lido Staked ETH"
+          },
+          "contractAddress": {
+            "type": "string",
+            "nullable": true,
+            "example": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+            "description": "null for the native coin"
+          },
+          "decimals": {
+            "type": "number",
+            "nullable": true,
+            "example": 18
+          },
+          "amount": {
+            "type": "string",
+            "example": "41719504281041810000000",
+            "description": "Raw on-chain amount as a base-10 integer string"
+          },
+          "priceUsd": {
+            "type": "number",
+            "nullable": true,
+            "example": 1991.97
+          },
+          "valueUsd": {
+            "type": "number",
+            "nullable": true,
+            "example": 83103914.31
+          },
+          "valueUsdChange1d": {
+            "type": "number",
+            "nullable": true,
+            "example": -764585.74
+          },
+          "iconUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "pnlLinks": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "contractImplementations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DefiContractImplementationApiResponse"
+            }
+          }
+        },
+        "required": [
+          "category",
+          "tokenId",
+          "symbol",
+          "name",
+          "contractAddress",
+          "decimals",
+          "amount",
+          "priceUsd",
+          "valueUsd",
+          "valueUsdChange1d",
+          "iconUrl",
+          "pnlLinks",
+          "contractImplementations"
+        ]
+      },
+      "DefiContractImplementationApiResponse": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "nullable": true,
+            "example": "arbitrum",
+            "description": "Provider chain slug"
+          },
+          "chainIdNumeric": {
+            "type": "number",
+            "nullable": true,
+            "example": 42161
+          },
+          "chainName": {
+            "type": "string",
+            "nullable": true,
+            "example": "Arbitrum"
+          },
+          "address": {
+            "type": "string",
+            "nullable": true,
+            "example": "0x5979d7b546e38e414f7e9822514be443a4800529"
+          },
+          "decimals": {
+            "type": "number",
+            "nullable": true,
+            "example": 18
+          }
+        },
+        "required": [
+          "chainId",
+          "chainIdNumeric",
+          "chainName",
+          "address",
+          "decimals"
         ]
       },
       "TokensForAddressApiResponseResultSwagger": {
