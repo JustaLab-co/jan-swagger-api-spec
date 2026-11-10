@@ -5627,7 +5627,7 @@
             "example": "0x1f4201aED7443a59a3f849E6A07dbF438FFB6C62"
           },
           "calls": {
-            "description": "1 to 32 calls, at most 128 KB of calldata in total",
+            "description": "1 to 100 calls, at most 128 KB of calldata in total",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/SimulateCallApiRequest"
@@ -5671,10 +5671,37 @@
             "type": "string",
             "description": "Raw revert data of the failing call",
             "example": "0x08c379a0"
+          },
+          "fee": {
+            "description": "On success, the most the sender can pay to send the calls, when the gas could be priced",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SimulateFeeApiResponse"
+              }
+            ]
           }
         },
         "required": [
           "status"
+        ]
+      },
+      "SimulateFeeApiResponse": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "The token the fee is paid in; the zero address for the network coin",
+            "example": "0x0000000000000000000000000000000000000000"
+          },
+          "max": {
+            "type": "string",
+            "description": "The most the sender can pay, in base units of the token",
+            "example": "638893000000000"
+          }
+        },
+        "required": [
+          "token",
+          "max"
         ]
       },
       "SimulateCallApiRequest": {
