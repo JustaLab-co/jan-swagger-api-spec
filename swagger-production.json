@@ -4240,6 +4240,16 @@
                 "type": "number"
               }
             }
+          },
+          {
+            "name": "fresh",
+            "required": false,
+            "in": "query",
+            "description": "true reads every chain from the provider instead of the per-pod cache, and the answer refreshes the cache. Only the exact value true asks for fresh data; any other value, or none, may be answered from the cache, up to 30 s old",
+            "schema": {
+              "example": true,
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
@@ -4249,6 +4259,68 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PortfolioDefiApiResponseSuccessSwagger"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Portfolio V2",
+          "Public",
+          "Proxy"
+        ]
+      }
+    },
+    "/proxy/v2/portfolio": {
+      "get": {
+        "operationId": "PortfolioV2ReadController_getOverview",
+        "summary": "Get Tokens and DeFi Positions for Address",
+        "description": "Retrieve every token and every DeFi position held by a wallet across multiple blockchain networks in one call: the tokens of GET /v2/portfolio/tokens (all of them, unpaginated) and the positions of GET /v2/portfolio/defi",
+        "parameters": [
+          {
+            "name": "address",
+            "required": true,
+            "in": "query",
+            "description": "Wallet address to get tokens and DeFi positions for",
+            "schema": {
+              "example": "0x742149f6aB17d7d2FD3A29ae2782b26EDa9c6F82",
+              "type": "string"
+            }
+          },
+          {
+            "name": "chainIds",
+            "required": true,
+            "in": "query",
+            "description": "Chain IDs to read tokens and DeFi positions on - supports multiple chains; a repeated ID is read once",
+            "schema": {
+              "example": [
+                1,
+                8453
+              ],
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            }
+          },
+          {
+            "name": "fresh",
+            "required": false,
+            "in": "query",
+            "description": "true reads every chain from the provider instead of the per-pod cache, and the answer refreshes the cache. Only the exact value true asks for fresh data; any other value, or none, may be answered from the cache, up to 30 s old",
+            "schema": {
+              "example": true,
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Tokens with balances, metadata and prices, and DeFi positions with their deposits, loans, rewards and USD values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortfolioOverviewApiResponseSuccessSwagger"
                 }
               }
             }
@@ -5605,6 +5677,22 @@
           "result"
         ]
       },
+      "PortfolioOverviewApiResponseSuccessSwagger": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "number",
+            "example": 200
+          },
+          "result": {
+            "$ref": "#/components/schemas/PortfolioOverviewApiResponseResultSwagger"
+          }
+        },
+        "required": [
+          "statusCode",
+          "result"
+        ]
+      },
       "SimulateApiRequest": {
         "type": "object",
         "properties": {
@@ -5745,14 +5833,14 @@
           "mode"
         ]
       },
-      "PortfolioDefiApiResponseResultSwagger": {
+      "PortfolioOverviewApiResponseResultSwagger": {
         "type": "object",
         "properties": {
           "data": {
             "nullable": true,
             "allOf": [
               {
-                "$ref": "#/components/schemas/DefiPositionsApiResponse"
+                "$ref": "#/components/schemas/PortfolioOverviewApiResponse"
               }
             ]
           },
@@ -5767,25 +5855,84 @@
           "error"
         ]
       },
-      "DefiPositionsApiResponse": {
+      "PortfolioOverviewApiResponse": {
         "type": "object",
         "properties": {
+          "tokens": {
+            "description": "Every token across the requested chains, unpaginated, each shaped like an item of GET /v2/portfolio/tokens",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TokenApiResponse"
+            }
+          },
           "positions": {
+            "description": "DeFi positions across the requested chains, shaped like GET /v2/portfolio/defi",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/DefiPositionApiResponse"
             }
           },
           "failedChains": {
-            "description": "Chains that failed while others answered; absent when none failed",
+            "description": "Chains that failed while others answered; their tokens, their positions, or both are unknown. Absent when none failed",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/DefiFailedChainApiResponse"
+              "$ref": "#/components/schemas/PortfolioOverviewFailedChainApiResponse"
+            }
+          },
+          "truncated": {
+            "type": "boolean",
+            "example": true,
+            "description": "Present and true when the wallet holds more than 1,000 tokens: tokens then lists the first 1,000, in the GET /v2/portfolio/tokens order. Absent otherwise"
+          }
+        },
+        "required": [
+          "tokens",
+          "positions"
+        ]
+      },
+      "TokenApiResponse": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "number",
+            "description": "The blockchain network chain ID where the token is located",
+            "example": 1
+          },
+          "address": {
+            "type": "string",
+            "description": "The wallet address for which the token data applies",
+            "example": "0x742149f6aB17d7d2FD3A29ae2782b26EDa9c6F82"
+          },
+          "tokenAddress": {
+            "type": "string",
+            "description": "The contract address of the token",
+            "example": "0x1c7d4b196cb0c7b01d743fbc6116a902379c7238"
+          },
+          "tokenBalance": {
+            "type": "string",
+            "description": "The quantity of the token held, represented as a raw string (e.g., in wei)",
+            "example": "1000000000000000000"
+          },
+          "tokenMetadata": {
+            "description": "Metadata about the token, potentially including name, symbol, decimals, etc.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TokenMetadataApiResponse"
+              }
+            ]
+          },
+          "tokenPrices": {
+            "description": "Array of pricing data for the token",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TokenPriceApiResponse"
             }
           }
         },
         "required": [
-          "positions"
+          "chainId",
+          "address",
+          "tokenBalance"
         ]
       },
       "DefiPositionApiResponse": {
@@ -5835,7 +5982,7 @@
           "attributes"
         ]
       },
-      "DefiFailedChainApiResponse": {
+      "PortfolioOverviewFailedChainApiResponse": {
         "type": "object",
         "properties": {
           "chainId": {
@@ -6120,6 +6267,126 @@
           "chainName",
           "address",
           "decimals"
+        ]
+      },
+      "TokenMetadataApiResponse": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The token's name. Is null if the name is not defined in the contract",
+            "example": "Ethereum",
+            "nullable": true
+          },
+          "symbol": {
+            "type": "string",
+            "description": "The token's symbol. Is null if the symbol is not defined in the contract",
+            "example": "ETH",
+            "nullable": true
+          },
+          "decimals": {
+            "type": "number",
+            "description": "The number of decimals of the token. Returns null if not defined in the contract",
+            "example": 18,
+            "nullable": true
+          },
+          "logo": {
+            "type": "string",
+            "description": "URL link to the token's logo. Is null if the logo is not available",
+            "example": "https://static.alchemyapi.io/images/assets/1027.png",
+            "nullable": true
+          }
+        },
+        "required": [
+          "name",
+          "symbol",
+          "decimals",
+          "logo"
+        ]
+      },
+      "TokenPriceApiResponse": {
+        "type": "object",
+        "properties": {
+          "currency": {
+            "type": "string",
+            "description": "The currency the price is denominated in",
+            "example": "usd"
+          },
+          "value": {
+            "type": "string",
+            "description": "The price value as a string to preserve precision",
+            "example": "2500.50"
+          },
+          "lastUpdatedAt": {
+            "type": "string",
+            "description": "ISO timestamp of when the price was last updated",
+            "example": "2025-07-02T10:30:00Z"
+          }
+        },
+        "required": [
+          "currency",
+          "value",
+          "lastUpdatedAt"
+        ]
+      },
+      "PortfolioDefiApiResponseResultSwagger": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DefiPositionsApiResponse"
+              }
+            ]
+          },
+          "error": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          }
+        },
+        "required": [
+          "data",
+          "error"
+        ]
+      },
+      "DefiPositionsApiResponse": {
+        "type": "object",
+        "properties": {
+          "positions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DefiPositionApiResponse"
+            }
+          },
+          "failedChains": {
+            "description": "Chains that failed while others answered; absent when none failed",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DefiFailedChainApiResponse"
+            }
+          }
+        },
+        "required": [
+          "positions"
+        ]
+      },
+      "DefiFailedChainApiResponse": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "number",
+            "example": 8453
+          },
+          "error": {
+            "type": "string",
+            "example": "timeout of 8000ms exceeded"
+          }
+        },
+        "required": [
+          "chainId",
+          "error"
         ]
       },
       "TokensForAddressApiResponseResultSwagger": {
